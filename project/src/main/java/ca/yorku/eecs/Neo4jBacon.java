@@ -191,7 +191,7 @@ public class Neo4jBacon {
 						e.printStackTrace();
 					}
 					
-					System.out.println(response);
+					
 					
 				}
 				

@@ -57,26 +57,62 @@ private void handleGet(HttpExchange request) throws IOException {
         URI uri = request.getRequestURI();
         String query = uri.getQuery();
        
-        Map<String, String> queryParam = splitQuery(query);
-        
+      
         
         
         if(uri.getPath().contains("getActor")) {
         	
+        	JSONObject jsonBody = null;
         	
-        	String id = queryParam.get("id");
+        	String id = null;
         	
-        	JSONObject str = db.getActor(id);
+        	String body = Utils.convert(request.getRequestBody());
         	
-        	sendString(request,str.toString(),200);
+        	try {
+				jsonBody = new JSONObject(body);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         	
+        	
+        	
+        	try {
+				 id = jsonBody.getString("actorId");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	JSONObject response = db.getActor(id);
+        	
+        	sendString(request,response.toString(),200);
         	
         	
         	
         	 
         }else if(uri.getPath().contains("getMovie")) {
         	
-        	String id = queryParam.get("id");
+        	JSONObject jsonBody = null;
+        	
+        	String id = null;
+        	
+        	String body = Utils.convert(request.getRequestBody());
+        	
+        	try {
+				jsonBody = new JSONObject(body);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	
+        	
+        	
+        	try {
+				 id = jsonBody.getString("movieId");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         	
         	JSONObject str = db.getMovie(id);
         	
@@ -89,13 +125,34 @@ private void handleGet(HttpExchange request) throws IOException {
         
         else if(uri.getPath().contains("hasRelationship")) {
         	
+        	JSONObject jsonBody = null;
         	
-        	String actorId = queryParam.get("actorId");
+        	String actorId = null;
         	
-        	String movieId = queryParam.get("movieId");
+        	String movieId = null;
+        	
+        	String body = Utils.convert(request.getRequestBody());
+        	
+        	try {
+				jsonBody = new JSONObject(body);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         	
         	
         	
+        	try {
+				 movieId = jsonBody.getString("movieId");
+				 actorId = jsonBody.getString("actorId");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	
+        	
+        	
+        
         	JSONObject str = db.hasRelationship(actorId, movieId);
         	
         	sendString(request,str.toString(),200);
@@ -113,7 +170,7 @@ private void handlePut(HttpExchange request) throws IOException{
 	
 	 URI uri = request.getRequestURI();
      String query = uri.getQuery();
-     Map<String, String> queryParam = splitQuery(query);
+     
      
     
      
@@ -125,41 +182,107 @@ private void handlePut(HttpExchange request) throws IOException{
     	 
     	 
     	 
-    	 String name = queryParam.get("name");
+    	 String name = null;
          
-         String id = queryParam.get("id");
+         String actorId = null;
+         
+         JSONObject jsonBody = null;
+         
+         String body = Utils.convert(request.getRequestBody());
+         
+         
+         try {
+				jsonBody = new JSONObject(body);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+     	
+     	
+     	
+     	try {
+				 name = jsonBody.getString("name");
+				 actorId = jsonBody.getString("actorId");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+     	
+         
+         db.addActor(actorId, name);
     	 
-    	 db.addActor(id, name);
-    	 
-    	 
-    	
-    	
-    	 
-     	 String response = "Actor "+name +" has been added";
+    	 String response = "Actor "+name +" has been added";
     	 
     	
      	sendString(request,response,200);
     	 
-    	 
-    	 
-  	 
-    	 
+     
      }else if(uri.getPath().contains("addMovie")){
     	 
-    	 String name = queryParam.get("name");
+    	 String name = null;
          
-         String id = queryParam.get("id");
+         String movieId = null;
+         
+         JSONObject jsonBody = null;
+         
+         String body = Utils.convert(request.getRequestBody());
+         
+         try {
+				jsonBody = new JSONObject(body);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+  	
+  	
+  	
+  	try {
+				 name = jsonBody.getString("name");
+				 movieId = jsonBody.getString("movieId");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+  	
+         
+         
+         
     	 
-    	 db.addMovie(id, name);
+    	 db.addMovie(movieId, name);
     	 
     	 String response = "Movie "+name +" has been added";
     	 sendString(request,response,200);
     	 
        }else if(uri.getPath().contains("addRelationship")) {
    	 
-   	    String actorId = queryParam.get("actorId");
+   	    String actorId = null;
         
-        String movieId = queryParam.get("movieId");
+        String movieId = null;
+        
+        String body = Utils.convert(request.getRequestBody());
+        
+        JSONObject jsonBody = null;
+        
+        try {
+			jsonBody = new JSONObject(body);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+	
+	
+	try {
+			 actorId = jsonBody.getString("actorId");
+			 movieId = jsonBody.getString("movieId");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        
+      
+        
     	db.addRelationship(actorId, movieId);
     	 
    	   String response = "Relationship Added";
@@ -172,15 +295,6 @@ private void handlePut(HttpExchange request) throws IOException{
 	
 }
 
-private static Map<String, String> splitQuery(String query) throws UnsupportedEncodingException {
-    Map<String, String> query_pairs = new LinkedHashMap<String, String>();
-    String[] pairs = query.split("&");
-    for (String pair : pairs) {
-        int idx = pair.indexOf("=");
-        query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
-    }
-    return query_pairs;
-}
 
 
 }
