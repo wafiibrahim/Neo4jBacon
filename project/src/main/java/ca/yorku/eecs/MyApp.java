@@ -51,7 +51,7 @@ public class MyApp implements HttpHandler{
 private void handleGet(HttpExchange request) throws IOException {
     	
         URI uri = request.getRequestURI();
-        String query = uri.getQuery();
+        
        
       
         
@@ -155,6 +155,69 @@ private void handleGet(HttpExchange request) throws IOException {
         	
         	
         	
+        }
+        
+        else if(uri.getPath().contains("computeBaconNumber")) {
+     	   
+     	   
+     	   String actorId = null;
+     	   
+     	   String body = Utils.convert(request.getRequestBody());
+     	   JSONObject jsonBody = null;
+     	   
+     	   try {
+    			jsonBody = new JSONObject(body);
+    		} catch (JSONException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    	
+    	
+    	
+    	try {
+    			 actorId = jsonBody.getString("actorId");
+    			 
+    		} catch (JSONException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+     	  
+    	JSONObject response = db.computeBaconNumber(actorId);
+    	
+    	sendString(request,response.toString(),200);
+     	   
+        }
+        
+        
+        else if(uri.getPath().contains("computeBaconPath")) {
+     	   
+     	   
+            String actorId = null;
+     	   
+     	   String body = Utils.convert(request.getRequestBody());
+     	   JSONObject jsonBody = null;
+     	   JSONObject response = null;
+     	   
+     	   try {
+    			jsonBody = new JSONObject(body);
+    		} catch (JSONException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    	
+    	
+    	
+    	try {
+    			 actorId = jsonBody.getString("actorId");
+    			 
+    		} catch (JSONException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+     	  
+    	       response = db.computeBaconPath(actorId);
+    	
+    	       sendString(request,response.toString(),200);
         }
 	
 
@@ -286,36 +349,9 @@ private void handlePut(HttpExchange request) throws IOException{
    	   sendString(request,response, 200);
    }
      
-       else if(uri.getPath().contains("computeBaconNumber")) {
-    	   
-    	   
-    	   String actorId = null;
-    	   
-    	   String body = Utils.convert(request.getRequestBody());
-    	   JSONObject jsonBody = null;
-    	   
-    	   try {
-   			jsonBody = new JSONObject(body);
-   		} catch (JSONException e) {
-   			// TODO Auto-generated catch block
-   			e.printStackTrace();
-   		}
-   	
-   	
-   	
-   	try {
-   			 actorId = jsonBody.getString("actorId");
-   			 
-   		} catch (JSONException e) {
-   			// TODO Auto-generated catch block
-   			e.printStackTrace();
-   		}
-    	  
-   	JSONObject response = db.computeBaconNumber(actorId);
-   	
-   	sendString(request,response.toString(),200);
-    	   
-       }
+
+     
+
      
    
 }

@@ -21,6 +21,7 @@ import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.StatementResult;
 import org.neo4j.driver.v1.Transaction;
+import org.neo4j.driver.v1.types.Path;
 
 
 public class Neo4jBacon {
@@ -307,6 +308,52 @@ public class Neo4jBacon {
 			
 		}
 		
+		
+		
+	}
+	
+	public JSONObject computeBaconPath(String actorId) {
+		
+		JSONObject response = new JSONObject();
+		ArrayList<String> actorList = new ArrayList<>();
+		String bacon = "nm0000102";
+		
+		
+		try(Session session = driver.session()){
+			
+			
+			try(Transaction tx = session.beginTransaction()){
+				
+				StatementResult result = tx.run("Match (n:Actor{id:$x}) with (n) MATCH (m:Actor{id:$y}), p = shortestPath((n)-[*..15]-(m)) UNWIND nodes(p) as nlist MATCH (nlist)<-[:ACTED_IN]-(a:Actor) RETURN a.id"
+						,parameters("x",bacon,"y",actorId));
+				
+				
+				while(result.hasNext()) {
+					
+					
+					
+					while(result.hasNext()) {
+						
+						
+						String id = result.next().get(0).asString();
+						
+						actorList.add(id);						
+						
+					
+					}
+				}
+				
+				try {
+					response.put("baconPath",actorList);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			
+		}
+		return response;
 		
 		
 	}
