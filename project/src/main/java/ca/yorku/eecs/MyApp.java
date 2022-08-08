@@ -1,12 +1,8 @@
 package ca.yorku.eecs;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+
 import java.net.URI;
-import java.net.URLDecoder;
-import java.net.http.HttpResponse;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -290,9 +286,38 @@ private void handlePut(HttpExchange request) throws IOException{
    	   sendString(request,response, 200);
    }
      
+       else if(uri.getPath().contains("computeBaconNumber")) {
+    	   
+    	   
+    	   String actorId = null;
+    	   
+    	   String body = Utils.convert(request.getRequestBody());
+    	   JSONObject jsonBody = null;
+    	   
+    	   try {
+   			jsonBody = new JSONObject(body);
+   		} catch (JSONException e) {
+   			// TODO Auto-generated catch block
+   			e.printStackTrace();
+   		}
+   	
+   	
+   	
+   	try {
+   			 actorId = jsonBody.getString("actorId");
+   			 
+   		} catch (JSONException e) {
+   			// TODO Auto-generated catch block
+   			e.printStackTrace();
+   		}
+    	  
+   	JSONObject response = db.computeBaconNumber(actorId);
+   	
+   	sendString(request,response.toString(),200);
+    	   
+       }
      
-	//http://localhost:8080/api/v1/addRelationship?actorId=nm00012&movieId=0010
-	
+   
 }
 
 

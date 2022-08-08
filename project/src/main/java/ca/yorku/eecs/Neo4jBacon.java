@@ -242,11 +242,7 @@ public class Neo4jBacon {
 			}
 			
 		
-			
-		
 		}
-		
-		
 		JSONObject response = new JSONObject();
 		
 		try {
@@ -266,5 +262,52 @@ public class Neo4jBacon {
 		
 	}
 	
+	// Match (n:Person{name:"Liv Tyler"}) with (n) MATCH (m:Person{name:"Lori Petty"}), p = shortestPath((n)-[*..15]-(m)) return length(p)
 	
+	
+	public JSONObject computeBaconNumber(String actorId) {
+		
+		String bacon = "nm0000102";
+		
+		JSONObject response = new JSONObject();
+		
+		try(Session session = driver.session()){
+			
+			
+			try(Transaction tx = session.beginTransaction()){
+				
+				
+				StatementResult result = tx.run("Match (n:Actor{id:$x}) with (n) MATCH (m:Actor{id:$y}), p = shortestPath((n)-[*..15]-(m)) return length(p)",
+						parameters("x",bacon,"y",actorId));
+				
+		if(result.hasNext()) {
+					
+					int baconNumber = result.next().get(0).asInt();
+					
+					
+					
+					
+					try {
+						response.put("baconNumber", baconNumber);
+						
+						
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					
+					
+				}
+			}
+			
+			return response;
+			
+		
+			
+		}
+		
+		
+		
+	}
 }
