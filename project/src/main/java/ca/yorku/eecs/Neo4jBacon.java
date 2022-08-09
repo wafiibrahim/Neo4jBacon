@@ -29,9 +29,14 @@ public class Neo4jBacon {
 	
 	private Driver driver;
 	private String uriDb;
-	
 	private static Neo4jBacon ins;
 	
+	private String actorId, actorName, movieId, movieName;
+	private boolean hasRelation;
+	private int baconNumber ;
+	private ArrayList<String> actorList;
+
+
 	private Neo4jBacon() {
 		uriDb = "bolt://localhost:7687"; // may need to change if you used a different port for your DBMS
 		Config config = Config.builder().withoutEncryption().build();
@@ -54,20 +59,23 @@ public class Neo4jBacon {
 	
 	
 	public void addActor(String id, String name) {
+		this.actorId = id;
+		this.actorName = name;
 		
 		try (Session session = driver.session()){
 			session.writeTransaction(tx -> tx.run("MERGE (a:Actor {name: $x, id: $y})", 
-					parameters("x", name, "y", id)));
+					parameters("x", actorName, "y", actorId)));
 			session.close();
 		}
 		
 	}
 	
 	public void addMovie(String id, String name) {
-		
+		this.movieId = id;
+		this.movieName = name;
 		try (Session session = driver.session()){
 			session.writeTransaction(tx -> tx.run("MERGE (a:Movie {name: $x, id: $y})", 
-					parameters("x", name, "y", id)));
+					parameters("x", movieName, "y", movieId)));
 			session.close();
 		}
 		
@@ -76,10 +84,11 @@ public class Neo4jBacon {
 	
 	
 	public void addRelationship(String actorId, String movieId) {
-		
+		this.actorId = actorId;
+		this.movieId = movieId;
 		try (Session session = driver.session()){
 			session.writeTransaction(tx -> tx.run("MATCH(a:Actor) WITH (a) MATCH (m:Movie) WHERE m.id=$x AND a.id=$y CREATE (a)-[:ACTED_IN]->(m)", 
-					parameters("x", movieId, "y", actorId)));
+					parameters("x", this.movieId, "y", this.actorId)));
 			session.close();
 		}
 		
@@ -96,7 +105,7 @@ public class Neo4jBacon {
 	 * /
 	 */
 	public JSONObject getActor(String actorId) {
-		
+		this.actorId = actorId;
 	     
 		JSONObject response = new JSONObject();
 	
@@ -106,9 +115,9 @@ public class Neo4jBacon {
         	try (Transaction tx = session.beginTransaction()){
         		
         		StatementResult result = tx.run("match (a:Actor{id:$x}) RETURN (a.name) as a ",
-                        parameters( "x", actorId ));
+                        parameters( "x", this.actorId ));
         		
-        		StatementResult resultArray = tx.run("match (m:Movie)--(:Actor{id:$x}) return m.id",parameters("x",actorId));
+        		StatementResult resultArray = tx.run("match (m:Movie)--(:Actor{id:$x}) return m.id",parameters("x",this.actorId));
 
         		
         		
@@ -121,7 +130,7 @@ public class Neo4jBacon {
 					try {
 						response.put("name", name);
 						
-						response.put("actorId", actorId);
+						response.put("actorId", this.actorId);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -160,6 +169,7 @@ public class Neo4jBacon {
 	
 	
 	public JSONObject getMovie(String movieId) {
+		this.movieId = movieId;
 		
 		JSONObject response = new JSONObject();
 		
@@ -168,9 +178,9 @@ public class Neo4jBacon {
 			
 			try(Transaction tx = session.beginTransaction()){
 				
-				StatementResult result = tx.run("match (m:Movie{id:$x}) RETURN (m.name) as m",parameters("x", movieId));
+				StatementResult result = tx.run("match (m:Movie{id:$x}) RETURN (m.name) as m",parameters("x", this.movieId));
 				
-				StatementResult resultArray = tx.run("match (a:Actor)--(m:Movie{id:$x}) return a.id",parameters("x",movieId));
+				StatementResult resultArray = tx.run("match (a:Actor)--(m:Movie{id:$x}) return a.id",parameters("x",this.movieId));
 				
 				
 				
@@ -186,7 +196,7 @@ public class Neo4jBacon {
 					try {
 						response.put("name", name);
 						
-						response.put("movieId", movieId);
+						response.put("movieId", this.movieId);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -223,126 +233,81 @@ public class Neo4jBacon {
 	}
 	
 	public JSONObject hasRelationship(String actorId, String movieId) {
-		
-		
-		
-		boolean hasRelation;
+		this.actorId = actorId;
+		this.movieId = movieId;
 		
 		try(Session session = driver.session()){
-			
-			
 			try(Transaction tx = session.beginTransaction()){
-				
-				
-			StatementResult result = tx.run("match (m:Movie{id:$x})--(a:Actor{id:$y}) return (a) ",parameters("x", movieId,"y", actorId));
-			
-			
-			
+			StatementResult result = tx.run("match (m:Movie{id:$x})--(a:Actor{id:$y}) return (a) ",parameters("x", this.movieId,"y", this.actorId));
 			hasRelation = result.hasNext();
-			
 			}
-			
-		
 		}
-		JSONObject response = new JSONObject();
 		
-		try {
-			response.put("actorId", actorId);
-			response.put("movieId",movieId);
-			
+		JSONObject response = new JSONObject();
+		try 
+		{
+			response.put("actorId", this.actorId);
+			response.put("movieId",this.movieId);	
 			response.put("hasRelationship", hasRelation);
-		} catch (JSONException e) {
+		} 
+		catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
-		
-	return response;
-		
-		
+		return response;
 	}
 	
 	// Match (n:Person{name:"Liv Tyler"}) with (n) MATCH (m:Person{name:"Lori Petty"}), p = shortestPath((n)-[*..15]-(m)) return length(p)
 	
 	
 	public JSONObject computeBaconNumber(String actorId) {
+		this.actorId = actorId;
 		
 		String bacon = "nm0000102";
 		
 		JSONObject response = new JSONObject();
-		
+
 		try(Session session = driver.session()){
-			
-			
 			try(Transaction tx = session.beginTransaction()){
-				
-				
 				StatementResult result = tx.run("Match (n:Actor{id:$x}) with (n) MATCH (m:Actor{id:$y}), p = shortestPath((n)-[*..15]-(m)) return length(p)",
-						parameters("x",bacon,"y",actorId));
+						parameters("x",bacon,"y",this.actorId));
 				
-		if(result.hasNext()) {
+				if(result.hasNext()) {
 					
-					int baconNumber = result.next().get(0).asInt();
-					
-					
-					
-					
+					baconNumber = result.next().get(0).asInt();
 					try {
-						response.put("baconNumber", baconNumber);
-						
-						
-					} catch (JSONException e) {
+						response.put("baconNumber", baconNumber);	
+					} 
+					catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-					}
-					
-					
-					
+					}	
 				}
 			}
-			
-			return response;
-			
-		
-			
-		}
-		
-		
-		
+			return response;	
+		}	
 	}
 	
 	public JSONObject computeBaconPath(String actorId) {
+		this.actorId = actorId;
 		
 		JSONObject response = new JSONObject();
-		ArrayList<String> actorList = new ArrayList<>();
+		
+		actorList = new ArrayList<>();
 		String bacon = "nm0000102";
 		
 		
 		try(Session session = driver.session()){
-			
-			
-			try(Transaction tx = session.beginTransaction()){
-				
+			try(Transaction tx = session.beginTransaction()){		
 				StatementResult result = tx.run("Match (n:Actor{id:$x}) with (n) MATCH (m:Actor{id:$y}), p = shortestPath((n)-[*..15]-(m)) UNWIND nodes(p) as nlist MATCH (nlist)<-[:ACTED_IN]-(a:Actor) RETURN a.id"
-						,parameters("x",bacon,"y",actorId));
-				
+						,parameters("x",bacon,"y",this.actorId));
 				
 				while(result.hasNext()) {
-					
-					
-					
-					while(result.hasNext()) {
-						
-						
+					while(result.hasNext()) {						
 						String id = result.next().get(0).asString();
-						
-						actorList.add(id);						
-						
-					
+						actorList.add(id);										
 					}
-				}
-				
+				}				
 				try {
 					response.put("baconPath",actorList);
 				} catch (JSONException e) {
@@ -357,4 +322,76 @@ public class Neo4jBacon {
 		
 		
 	}
+
+
+	
+	
+	//Getter & Setter
+	public String getActorId() {
+		return actorId;
+	}
+
+
+	public void setActorId(String actorId) {
+		this.actorId = actorId;
+	}
+
+
+	public String getMovieId() {
+		return movieId;
+	}
+
+
+	public void setMovieId(String movieId) {
+		this.movieId = movieId;
+	}
+
+
+	public String getMovieName() {
+		return movieName;
+	}
+
+
+	public void setMovieName(String movieName) {
+		this.movieName = movieName;
+	}
+
+
+	public String getActorName() {
+		return actorName;
+	}
+
+
+	public void setActorName(String actorName) {
+		this.actorName = actorName;
+	}
+
+
+	public boolean isHasRelation() {
+		return hasRelation;
+	}
+
+
+	public void setHasRelation(boolean hasRelation) {
+		this.hasRelation = hasRelation;
+	}
+	
+	public int getBaconNumber() {
+		return baconNumber;
+	}
+
+
+	public void setBaconNumber(int baconNumber) {
+		this.baconNumber = baconNumber;
+	}
+	
+	public ArrayList<String> getActorList() {
+		return actorList;
+	}
+
+
+	public void setActorList(ArrayList<String> actorList) {
+		this.actorList = actorList;
+	}
+
 }
