@@ -2,7 +2,7 @@
 
 
 -clone repository
--make sure java version is 1.8 while runnin
+-make sure java version is 1.8 while running
 
 -check the port number whether its already in bind or not
 
